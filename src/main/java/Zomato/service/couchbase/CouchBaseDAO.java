@@ -1,5 +1,6 @@
 package Zomato.service.couchbase;
 
+import com.google.gson.Gson;
 import com.mongodb.*;
 
 import org.json.JSONArray;
@@ -139,6 +140,63 @@ public class CouchBaseDAO {
 //			}
 //		}
 //	}
+
+	public String generateCuisineTable(){
+		DBCollection restaurantCollection = collections.get("Restaurant");
+		DBCollection cui2RestCollection = collections.get("Cui2Rest");
+		int processedThisTime = 0;
+		DBCursor dbObjects = restaurantCollection.find();
+		while (dbObjects.hasNext()){
+			DBObject next = dbObjects.next();
+			if (next.get("isProcessed") == null){
+				try {
+					process(cui2RestCollection, next);
+					BasicDBObject appendObject = new BasicDBObject();
+					appendObject.append("$set", new BasicDBObject().append("isProcessed", 1));
+					BasicDBObject searchQuery = new BasicDBObject().append("_id", next.get("_id"));
+					restaurantCollection.update(searchQuery, appendObject);
+					++processedThisTime;
+				}catch (Exception e){
+					System.out.println(e);
+				}
+
+			}else{
+				continue;
+			}
+		}
+		return "processed items count : " + processedThisTime;
+	}
+
+	private void process(DBCollection cui2RestCollection, DBObject next) {
+		String cuisines = String.valueOf(next.get("cuisines"));
+		cuisines = cuisines.replaceAll(Pattern.quote("["),"");
+		cuisines = cuisines.replaceAll(Pattern.quote("]"),"");
+		cuisines = cuisines.replaceAll(Pattern.quote("\""),"");
+
+
+		String restaurantName = String.valueOf(next.get("name"));
+		String restaurantRating = String.valueOf(next.get("rating"));
+		int res_id = Double.valueOf(String.valueOf(next.get("res_id"))).intValue();
+		List<String> strings = Arrays.asList(cuisines.split(Pattern.quote(",")));
+		for (String cuisine : strings){
+			cuisine = cuisine.trim();
+			BasicDBObject queryObj = new BasicDBObject("cuisine",cuisine);
+			DBObject one = cui2RestCollection.findOne(queryObj);
+			if (one != null){
+				DBObject restaurantItem = new BasicDBObject("restaurants",new BasicDBObject("name",restaurantName).append("rating",restaurantRating).append("res_id",res_id));
+				DBObject updatequery = new BasicDBObject("$push",restaurantItem);
+				cui2RestCollection.update(new BasicDBObject("_id",one.get("_id")),updatequery);
+
+			}else{
+				BasicDBList restList = new BasicDBList();
+				restList.add(new BasicDBObject("name",restaurantName).append("rating",restaurantRating).append("res_id",res_id));
+				DBObject cuisineEntry = new BasicDBObject("cuisine",cuisine).append("restaurants",restList);
+				cui2RestCollection.insert(cuisineEntry);
+			}
+		}
+
+
+	}
 
 
 }

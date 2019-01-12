@@ -63,6 +63,16 @@ public class TestController {
 
     }
 
+    @ResponseBody
+    @RequestMapping(value = "generateCuisineTable",method = RequestMethod.GET)
+    public String generateCuisineTable(){
+        try{
+            return couchBaseDAO.generateCuisineTable();
+        }catch (Exception e){
+            return "Unsuccessful";
+        }
+    }
+
 //    @RequestMapping(value = "generateDegreesAndDistance",method = RequestMethod.GET)
 //    public String generateDegreesAndDistance(){
 //        return couchBaseDAO.generateDegreesAndDistance();
