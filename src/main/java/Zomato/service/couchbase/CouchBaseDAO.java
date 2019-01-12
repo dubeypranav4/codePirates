@@ -1,16 +1,15 @@
 package Zomato.service.couchbase;
 
 import com.mongodb.*;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Repository
@@ -98,4 +97,48 @@ public class CouchBaseDAO {
 	public String diagnosis() {
 		return db.getName();
 	}
+
+	public JSONArray getPredictedRestaurant(String userId) {
+		DBCollection restaurants = collections.get("Restaurant");
+		int count = (int) restaurants.count();
+		int skipCount = 0;
+		if (count>20){
+			count = count - 20;
+			Random random = new Random();
+			skipCount = random.nextInt(count) + 1;
+		}
+		DBCursor cursor = restaurants.find().skip(skipCount).limit(20);
+		JSONArray restaurantDetails = new JSONArray();
+		while(cursor.hasNext()){
+			DBObject next = cursor.next();
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("name",next.get("name"));
+			jsonObj.put("geometry",next.get("geometry"));
+			jsonObj.put("rating",next.get("rating"));
+			restaurantDetails.put(jsonObj);
+
+
+		}
+		return restaurantDetails;
+	}
+
+//	public String generateDegreesAndDistance() {
+//		DBCollection restaurant = collections.get("Restaurant");
+//		int batch_size = 20;
+//		int init = 0;
+//		int counter_processed = 0;
+//		DBCursor cursor = restaurant.find().limit(20);
+//		while(cursor!= null){
+//			while(cursor.hasNext()){
+//				DBObject next = cursor.next();
+//				JSONObject geometry = (JSONObject) next.get("geometry");
+//				String lat = String.valueOf(geometry.get("lat"));
+//				String lng = String.valueOf(geometry.get("lng"));
+//
+//
+//			}
+//		}
+//	}
+
+
 }

@@ -1,9 +1,14 @@
 package Zomato.controller;
 
 import Zomato.service.couchbase.CouchBaseDAO;
+import com.mongodb.util.JSON;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.regex.Pattern;
 
 @Controller
 public class TestController {
@@ -46,6 +51,24 @@ public class TestController {
     public String getUserDetails(@PathVariable("id") String userId){
         return couchBaseDAO.get("Users",userId);
     }
+
+    @ResponseBody
+    @RequestMapping(value = "getPredictedRestaurants/{userId}",method = RequestMethod.GET,produces = "application/json")
+    public String getPredictedRestaurants(@PathVariable String userId){
+        JSONObject object = new JSONObject();
+        object.put("results",couchBaseDAO.getPredictedRestaurant(userId));
+
+        return object.toString().replaceAll(Pattern.quote("\\"),Pattern.quote(""));
+
+
+    }
+
+//    @RequestMapping(value = "generateDegreesAndDistance",method = RequestMethod.GET)
+//    public String generateDegreesAndDistance(){
+//        return couchBaseDAO.generateDegreesAndDistance();
+//    }
+
+
 
 
 }
