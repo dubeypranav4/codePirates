@@ -1,84 +1,101 @@
 package Zomato.service.couchbase;
-import com.couchbase.client.java.Bucket;
-import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.CouchbaseCluster;
 
+import com.mongodb.*;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Repository
 public class CouchBaseDAO {
 
-	@Value("${couchbase.cluster}")
+	@Value("${mongo.cluster}")
 	private  String clusterName;// = "0.0.0.0:8091";
 
-	@Value("${couchbase.cluster.username}")
+	@Value("${mongo.cluster.username}")
 	private String username;// = "admin";
 
-	@Value("${couchbase.cluster.password}")
+	@Value("${mongo.cluster.password}")
 	private String password;// = "codepir";
 
-	@Value("${couchbase.default.bucket}")
-	private String bucketName;// = "TestBucket";
+	@Value("${mongo.dbname}")
+	private String dbName;// = "TestBucket";
 
-	private Cluster cluster = null;
+	@Value("${mongo.db.collections}")
+	private String collectionsString;
 
-	private Map<String, Bucket> buckets = null;
+	private MongoClient mongoClient;
 
-//	private static Logger logger = LogManager.getRootLogger();
+	private DB db ;
+
+	private Map<String,DBCollection> collections;
+
+	public static String USER_EMAIL = "email";
+	public static String USER_NAME = "name";
+	public static String USER_MOBILE = "mobile";
+
+	//	private static Logger logger = LogManager.getRootLogger();
 	@PostConstruct
 	private void init(){
-//		logger.log(Level.INFO,"Trying to connect to couchbase cluster : " + clusterName);
-		System.out.println(username + " " + clusterName + " " + password);
-		cluster = CouchbaseCluster.create(clusterName);
-		buckets = new HashMap<>();
-		cluster.authenticate(username,password);
-		openBucket(bucketName);
-//		logger.log(Level.INFO,"Successfully connected to couchbase cluster :" + clusterName);
-//		logger.log(Level.INFO,cluster.diagnostics().toString());
-
-	}
-
-
-	public String diagnos(){
-		return cluster.diagnostics().toString();
-	}
-
-	private Bucket openBucket(String bucketName) {
-		if(cluster == null){
-//			logger.log(Level.INFO,"cluster not initialized ... run init");
-			return null;
-		}
-
-		if (buckets.containsKey(bucketName)){
-			return buckets.get(bucketName);
-		}
-		Bucket bucket = null;
 		try {
-			bucket = cluster.openBucket(bucketName);
+			mongoClient = new MongoClient(new MongoClientURI(clusterName));
+			db = mongoClient.getDB(dbName);
+			collections = new HashMap<>();
+			String[] split = collectionsString.split(Pattern.quote(":"));
+			Arrays.asList(split).stream().forEach(t -> {
+				collections.put(t,db.getCollection(t));
+			});
+			System.out.println(collections);
 		}catch (Exception e){
-//			logger.log(Level.ERROR,e);
-			return null;
+			System.out.println("Error in connecting to ");
 		}
 
-		buckets.put(bucketName,bucket);
-		return bucket;
+
+	}
+
+
+	public void insert(String collectionName,String jsonString){
+		DBCollection dbCollection = collections.get(collectionName);
+		JSONObject object =new JSONObject(jsonString);
+		BasicDBObject document = new BasicDBObject();
+		document.put(USER_EMAIL,object.get(USER_EMAIL));
+		document.put(USER_NAME,object.get(USER_NAME));
+		document.put(USER_MOBILE,object.get(USER_MOBILE));
+		dbCollection.insert(document);
+	}
+
+	public String get(String collectionName,String userId){
+		DBCollection dbCollection = collections.get(collectionName);
+		BasicDBObject basicDBObject = new BasicDBObject(USER_EMAIL, userId);
+		return dbCollection.find(basicDBObject).one().toString();
 	}
 
 
 
+
+
+
+
+	public void insertDocument(String bucketName){
+		// Create a JSON Document
+
+
+
+	}
 	@PreDestroy
 	private void free(){
-//		buckets.entrySet().stream().forEach(t -> {t.getValue().close();logger.log(Level.INFO,"bucket " + t.getKey() + " closed");});
-		buckets = null;
-		cluster.disconnect();
-		cluster = null;
-//		logger.info("Cluster " + clusterName + " disconnected");
+
+		System.out.println("Cluster " + clusterName + " disconnected");
+	}
+
+	public String diagnosis() {
+		return db.getName();
 	}
 }
