@@ -30,8 +30,8 @@ public class TestController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "insert",method = RequestMethod.POST)
-    public String insert(@RequestBody String body){
+    @RequestMapping(value = "insertUserDetails",method = RequestMethod.POST)
+    public String insertUserDetails(@RequestBody String body){
         System.out.println(body);
         try {
             couchBaseDAO.insert("Users", body);
@@ -42,8 +42,8 @@ public class TestController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "getData/{id}",method = RequestMethod.GET)
-    public String getData(@PathVariable("id") String userId){
+    @RequestMapping(value = "getUserDetails/{id}",method = RequestMethod.GET)
+    public String getUserDetails(@PathVariable("id") String userId){
         return couchBaseDAO.get("Users",userId);
     }
 
