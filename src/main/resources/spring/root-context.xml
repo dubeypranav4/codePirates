@@ -19,6 +19,7 @@
         <property name="locations">
             <list>
                 <value>classpath:properties/${environment}/App.properties</value>
+                <value>classpath:properties/${environment}/db.properties</value>
                  </list>
         </property>
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
