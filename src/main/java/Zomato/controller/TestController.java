@@ -1,29 +1,19 @@
 package Zomato.controller;
 
 import Zomato.DTO.OrderRequest;
-import Zomato.DTO.OrdersDto;
-import Zomato.DTO.ProductsDto;
-import Zomato.DTO.UserDto;
 import Zomato.JsonUtil.JsonUtil;
 import Zomato.Tasks.CuisinePriorityTask;
 import Zomato.service.couchbase.CouchBaseDAO;
-import com.mongodb.util.JSON;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.regex.Pattern;
-import javax.jws.soap.SOAPBinding;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.regex.Pattern;
 
 @Controller
 public class TestController {
@@ -97,8 +87,8 @@ public class TestController {
     }
     @ResponseBody
     @RequestMapping(value = "order",method = RequestMethod.POST)
-    public String getOrder(@RequestBody ArrayList<OrderRequest> requestpojo){
-        try{ArrayList<String > email =new ArrayList<String>();
+   public String getOrder(@RequestBody ArrayList<OrderRequest> requestpojo){
+   try{ArrayList<String > email =new ArrayList<String>();
             for(int i=0;i<requestpojo.size();i++)
                 email.add(requestpojo.get(i).getUserid());
         Future<String> response=threadPoolExecutor.submit(new CuisinePriorityTask(email));
@@ -108,7 +98,7 @@ public class TestController {
     catch(Exception e)
     {System.out.println("Exception occured while submitting task "+e);
     }
-return "done";
+   return "done";
     }
 
     @ResponseBody
@@ -138,6 +128,7 @@ return "done";
 //    }
 
 
+    }
 
 
-}
+
