@@ -24,7 +24,12 @@
         </property>
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
     </bean>
-
+    <bean id="TaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="${thread.pool.size}" />
+        <property name="maxPoolSize" value="${thread.max.pool.size}" />
+        <property name="keepAliveSeconds" value="${thread.keepAliveSeconds}" />
+        <property name="queueCapacity" value="${thread.queue.capacity}" />
+    </bean>
     <task:annotation-driven/>
 </beans>
 
