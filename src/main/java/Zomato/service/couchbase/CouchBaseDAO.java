@@ -198,5 +198,9 @@ public class CouchBaseDAO {
 
 	}
 
+	public void preDestroy(){
+		mongoClient.close();
+	}
+
 
 }
