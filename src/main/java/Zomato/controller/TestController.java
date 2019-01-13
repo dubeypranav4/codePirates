@@ -112,9 +112,10 @@ return "done";
     }
 
     @ResponseBody
-    @RequestMapping(value = "getPredictedRestaurants/{userId}",method = RequestMethod.GET,produces = "application/json")
-    public String getPredictedRestaurants(@PathVariable String userId){
+    @RequestMapping(value = "getPredictedRestaurants/{userId}",method = RequestMethod.POST,produces = "application/json")
+    public String getPredictedRestaurants(@PathVariable String userId,@RequestBody String body){
         JSONObject object = new JSONObject();
+
         object.put("results",couchBaseDAO.getPredictedRestaurant(userId));
 
         return object.toString().replaceAll(Pattern.quote("\\"),Pattern.quote(""));
